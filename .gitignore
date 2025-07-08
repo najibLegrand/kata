@@ -1,0 +1,14 @@
+# Java / Maven
+target/
+*.log
+
+# Node
+node_modules/
+.next/
+npm-debug.log
+
+# Docker
+**/*.jar
+
+#intelliJ
+.idea/

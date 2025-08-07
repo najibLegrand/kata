@@ -20,13 +20,12 @@ Additionally, you have the opportunity to incorporate [Bonus Features](#-bonus-f
 
 - Java 21
 - `README.md` file — _detail any intricacies within your implementation and provide instructions for launching your project_.
-- Spring Boot
-- ReactJS || React Native
+- Spring AI
 
 ### 📦 Delivery
 
 The code must be accessible through this GitLab repository.\
-👉 Once you are done, please inform us via [this Google Form](https://docs.google.com/forms/d/e/1FAIpQLSfg6oj8H2ie4GHHohisyeyNTXC8dm7BlbNf83kG4w3sOLEFLQ/viewform?usp=pp_url&entry.1473061203=hmaida.najib@gmail.com&entry.1365152005=SF-0413-SI01) 🔚
+👉 Once you are done, please inform us via [this Google Form]("https://docs.google.com/forms/d/e/1FAIpQLScJLo01qFeIn-mkP5iUoT6J05fcVJkjfdIfwg1_8ZEuVHbqrg/viewform?usp=pp_url&entry.1667738751=hmaida.najib@gmail.com&entry.1031799305=72542231") 🔚
 
 ### 📝 Evaluation
 
@@ -45,11 +44,13 @@ To quickly establish your project's foundation, you can make use of [spring init
 
 #### User Story
 
-> As a customer, I can add a discount code before the checkout. It should apply a discount.
+> As a customer, I can select my preferred delivery method.\
+> The available delivery methods are: `DRIVE`, `DELIVERY`, `DELIVERY_TODAY`, `DELIVERY_ASAP`.
 
 #### User Story
 
-> Discount codes have application restrictions on certain products.
+> As a customer, I can choose my preferred day and time slot for delivery.\
+> Time slots are specific to the chosen delivery method and can be reserved by other customers.
 
 ### ✨ Bonus features
 

@@ -16,6 +16,8 @@
         <spring-boot.version>3.4.0</spring-boot.version>
         <spring-ai.version>1.0.0-M6</spring-ai.version>
         <maven.compiler.release>${java.version}</maven.compiler.release>
+        <!-- Pour @PathVariable/@RequestParam sans nom: -->
+        <maven.compiler.parameters>true</maven.compiler.parameters>
     </properties>
 
     <dependencyManagement>
@@ -37,14 +39,6 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
-
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
-                <version>5.12.0</version>
-                <scope>test</scope>
-            </dependency>
-
         </dependencies>
     </dependencyManagement>
 
@@ -78,18 +72,40 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
+
     </dependencies>
 
     <build>
         <plugins>
+            <!-- Jar exécutable Spring Boot -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
+                    <!-- Optionnel, Boot détecte la classe @SpringBootApplication tout seul -->
                     <mainClass>com.carrefour.kata.DeliverySchedulerApplication</mainClass>
                 </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
+
+            <!-- (Optionnel) compiler plugin explicite si tu préfères que via <properties> -->
+            <!--
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-compiler-plugin</artifactId>
+              <configuration>
+                <release>${java.version}</release>
+                <parameters>true</parameters>
+              </configuration>
+            </plugin>
+            -->
         </plugins>
     </build>
 

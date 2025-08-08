@@ -159,15 +159,6 @@ mvn clean test
 
 ---
 
-## 🧩 Correctif Java (-parameters)
-
- Dans le pom.xml (maven-compiler-plugin), vérifier :
- <compilerArgs>
-   <arg>-parameters</arg>
- </compilerArgs>
-
----
-
 ## 📡 API – Endpoints principaux
 
 ### Lister les créneaux par mode + jour (exemple de route)
@@ -243,12 +234,6 @@ curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-08"
 - Pas d’authentification/quotas client pour rester focalisé sur le kata
 - Spring AI utilisable avec clé OpenAI, sinon tests AI mockés
 
----
-
-## 🧩 Postman (facultatif)
-
-#### Importez une collection (si fournie) ou testez via cURL.
-#### Pensez à définir OPENAI_API_KEY dans vos variables d’environnement si vous appelez /ai/advice.
 
 ---
 

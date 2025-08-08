@@ -60,4 +60,5 @@ public class TimeSlot {
     public void setReserved(boolean reserved) {
         this.reserved = reserved;
     }
+    void setId(Long id) { this.id = id; }
 }

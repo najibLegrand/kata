@@ -6,6 +6,7 @@ import com.carrefour.kata.repository.TimeSlotRepository;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 
 import java.time.LocalDate;
@@ -32,6 +33,7 @@ public class DeliverySchedulerApplication {
      * est encore vide.
      */
     @Bean
+    @ConditionalOnProperty(name = "app.seed.enabled", havingValue = "true", matchIfMissing = true)
     CommandLineRunner seedDatabase(TimeSlotRepository repo) {
         return args -> {
             if (repo.count() > 0) return;      // déjà peuplé ? on sort.

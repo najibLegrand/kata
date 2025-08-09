@@ -32,12 +32,6 @@ MVP de réservation de créneaux de livraison :
 
 ---
 
-## 🛠️ Stack technique
-
-Backend : Spring Boot 3.4, Java 21, Spring Web, Spring Data JPA, H2 (dev), Spring AI  
-Tests : JUnit 5, Mockito, Spring Boot Test
-
----
 
 ## 📦 Prérequis
 
@@ -50,16 +44,18 @@ Tests : JUnit 5, Mockito, Spring Boot Test
 ## ⚙️ Configuration (application.properties)
 
 ### JPA/H2 (dev)
-spring.datasource.url=jdbc:h2:mem:devdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
-spring.jpa.hibernate.ddl-auto=update
-spring.h2.console.enabled=true
+- spring.datasource.url=jdbc:h2:mem:devdb;MODE=PostgreSQL;DB_CLOSE_DELAY=-1
 
-### Spring AI (mettre une vraie clé si vous activez l’IA)
-spring.ai.openai.api-key=${OPENAI_API_KEY:}
-spring.ai.openai.chat.options.model=gpt-4o-mini
+- spring.jpa.hibernate.ddl-auto=update
+
+- spring.h2.console.enabled=true
+
+### Spring AI (mettre une vraie clé si vous activez l’IA dans .env)
+
+- spring.ai.openai.chat.options.model=gpt-4o-mini
 
 ### Seed (désactivé en test, activable en dev)
-app.seed.enabled=true
+- app.seed.enabled=true
 
 ---
 
@@ -68,54 +64,57 @@ app.seed.enabled=true
 
 
  1) Cloner le dépôt
-git clone https://github.com/<votre-org>/delivery-scheduler.git
-cd delivery-scheduler
+- git clone https://gitlab.com/crafteam.habidi/kata.git
+
+- cd delivery-scheduler
 
  2) Préparer les variables d'environnement
-    → Copiez l'exemple puis renseignez votre clé OpenAI
-cp .env.example .env
-    Ouvrez .env et remplacez:
-    OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+- Copiez l'exemple puis renseignez votre clé OpenAI :
+- Ouvrez .env et remplacez:
+-     SPRING_AI_OPENAI_API_KEY=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
  
 ### Option A : Docker (recommandé)
- 
 
- 3A) Build & run (multi-stage Dockerfile -> image runtime JRE only)
-docker compose up --build -d
-
- 4A) Vérifier les logs de l'API
-docker compose logs -f api
-
- 5A) Smoke test
-curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-10"
+1) Build & run (multi-stage Dockerfile -> image runtime JRE only)
+- docker compose up --build -d
+2) Vérifier les logs de l'API
+- docker compose logs -f api
+3) Smoke test
+- curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-10"
  → {"advice":"Pour garantir la disponibilité de votre créneau ..."}
 
- (Arrêt)
- docker compose down           # stop
- docker compose down -v        # stop + volumes
+
+- (Arrêt)
+
+    - docker compose down           # stop
+
+    - docker compose down -v        # stop + volumes
 
 ### Option B : Exécution locale (JDK 21 + Maven 3.9+)
 
- 3B) Exporter la clé dans votre shell
-export OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+ 1) Exporter la clé dans votre shell
+    - export SPRING_AI_OPENAI_API_KEY="sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
 
- 4B) Démarrer l'app
-mvn -q spring-boot:run
+ 2) Démarrer l'app + exporter la clé OpenIA
+    - mvn -q -Dspring-boot.run.profiles=dev  -Dspring-boot.run.arguments="--spring.ai.openai.api-key=sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx" spring-boot:run
 
- 5B) Smoke test
-curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-10"
+ 3) Smoke test
+    - curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-10"
 
  
 ## Notes & dépannage rapides
 
 
  - 401 invalid_api_key ?
-   Vérifiez la variable dans le container :
-   docker compose exec api printenv | grep OPENAI
+
+    - Vérifiez la variable dans le container :
+
+            docker compose exec api printenv | grep OPENAI
 
  - Build/packaging manuel :
-   mvn -q -DskipTests package && java -jar target/*.jar
+
+        mvn -q -DskipTests package && java -jar target/*.jar
 
  - Profil test :
    Le seed de données est désactivé automatiquement pendant les tests.
@@ -125,32 +124,19 @@ curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-10"
 ## 🚀 Démarrage
 
 ### 1) Lancer l’appli (profil dev par défaut)
-mvn spring-boot:run
+    mvn spring-boot:run
 
-### 2) (Facultatif) Avec profil explicite
-SPRING_PROFILES_ACTIVE=dev mvn spring-boot:run
+### 2) Console H2 (dev)
+       - JDBC URL : jdbc:h2:mem:devdb
+       - UI       : http://localhost:8080/h2-console
 
-### 3) Console H2 (dev)
-   - JDBC URL : jdbc:h2:mem:devdb
-   - UI       : http://localhost:8080/h2-console
-
----
-
-## 🔑 Clé OpenAI (si vous testez l’IA)
-
- Générer une clé sur https://platform.openai.com/
- Puis exporter la variable d’environnement avant de lancer l’appli :
-### Windows PowerShell
-$Env:OPENAI_API_KEY="sk-..."
-### bash/zsh
-export OPENAI_API_KEY="sk-..."
 
 ---
 
 ## 🧪 Tests
 
 ### Tous les tests
-mvn clean test
+    mvn clean test
 
 ### Notes :
  - Le seed de données est désactivé en profil test.
@@ -162,33 +148,33 @@ mvn clean test
 ## 📡 API – Endpoints principaux
 
 ### Lister les créneaux par mode + jour (exemple de route)
-GET /slots?method=DELIVERY&day=2025-08-08
-→ 200 OK
-[
-{ "id": 1, "day": "2025-08-08", "start": "10:00", "end": "11:00", "reserved": false, "method": "DELIVERY" }
-...
-]
+    GET /slots?method=DELIVERY&day=2025-08-08
+    → 200 OK
+    [
+    { "id": 1, "day": "2025-08-08", "start": "10:00", "end": "11:00", "reserved": false, "method": "DELIVERY" }
+    ...
+    ]
 
 ### Réserver un créneau
-POST /reservations/{slotId}
-Content-Type: application/json
-{
-"customerRef": "CUST-12345"
-}
-→ 200 OK
-{
-"reservationId": 42,
-"slotId": 1,
-"customerRef": "CUST-12345"
-}
+    POST /reservations/{slotId}
+    Content-Type: application/json
+    {
+    "customerRef": "CUST-12345"
+    }
+    → 200 OK
+    {
+    "reservationId": 42,
+    "slotId": 1,
+    "customerRef": "CUST-12345"
+    }
 ### Cas d’erreur possibles :
  - 404 si le slot n’existe pas
  - 409 si le slot est déjà réservé (IllegalStateException)
 
 ### Conseil (Spring AI)
-GET /ai/advice?method=DELIVERY&day=2025-08-08
-→ 200 OK
-{ "advice": "..." }
+    GET /ai/advice?method=DELIVERY&day=2025-08-08
+    → 200 OK
+    { "advice": "..." }
 ### Cas d’erreur :
  - 400 si method invalide (enum)
  - 400 si day manquant
@@ -199,22 +185,39 @@ GET /ai/advice?method=DELIVERY&day=2025-08-08
 ## 🧪 Exemples CURL
 
 ### Slots
-curl "http://localhost:8080/slots?method=DELIVERY&day=2025-08-08"
+    curl "http://localhost:8080/slots?method=DELIVERY&day=2025-08-08"
 
 ### Réservation
-curl -X POST "http://localhost:8080/reservations/1" \
--H "Content-Type: application/json" \
--d '{ "customerRef": "CUST-12345" }'
+    curl -X POST "http://localhost:8080/reservations/1" \
+    -H "Content-Type: application/json" \
+    -d '{ "customerRef": "CUST-12345" }'
 
 ### Conseil AI
-curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-08"
+    curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-08"
 
 ---
 
 ## 📚 Jeux de données (dev)
 
-### Le seed (CommandLineRunner) crée quelques créneaux sur plusieurs jours
-### pour chaque mode de livraison. En test, il est désactivé.
+ Le seed (CommandLineRunner) crée quelques créneaux sur plusieurs jours
+ pour chaque mode de livraison. En test, il est désactivé.
+
+
+---
+
+## 📘 Swagger / OpenAPI – Documentation de l’API
+
+## UI
+http://localhost:8080/swagger-ui.html
+
+## OpenAPI JSON
+http://localhost:8080/v3/api-docs
+http://localhost:8080/v3/api-docs/delivery-scheduler
+
+## OpenAPI YAML
+http://localhost:8080/v3/api-docs.yaml
+http://localhost:8080/v3/api-docs/delivery-scheduler.yaml
+
 
 ---
 
@@ -228,14 +231,6 @@ curl "http://localhost:8080/ai/advice?method=DELIVERY&day=2025-08-08"
 
 ---
 
-## 🧭 Décisions & limites
-
-- Stockage H2 en mémoire pour la démo (remplaçable par Postgres/MySQL)
-- Pas d’authentification/quotas client pour rester focalisé sur le kata
-- Spring AI utilisable avec clé OpenAI, sinon tests AI mockés
-
-
----
 
 ## 👤 Auteur
 

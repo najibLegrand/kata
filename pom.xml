@@ -18,6 +18,7 @@
         <maven.compiler.release>${java.version}</maven.compiler.release>
         <!-- Pour @PathVariable/@RequestParam sans nom: -->
         <maven.compiler.parameters>true</maven.compiler.parameters>
+        <springdoc.version>2.7.0</springdoc.version>
     </properties>
 
     <dependencyManagement>
@@ -71,6 +72,12 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springdoc</groupId>
+            <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+            <version>${springdoc.version}</version>
         </dependency>
 
     </dependencies>

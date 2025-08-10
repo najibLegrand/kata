@@ -127,7 +127,7 @@ MVP de réservation de créneaux de livraison :
     mvn spring-boot:run
 
 ### 2) Console H2 (dev)
-       - JDBC URL : jdbc:h2:mem:devdb
+       - JDBC URL : jdbc:h2:mem:deliverydb
        - UI       : http://localhost:8080/h2-console
 
 

@@ -1,44 +1,81 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
   pull_request:
+  push:
     branches: [ main ]
 
 jobs:
-  build-test:
+  build-test-image:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write     # push vers GHCR avec GITHUB_TOKEN
+      actions: read
+    env:
+      # Évite tout appel IA pendant les tests
+      SPRING_AI_OPENAI_ENABLED: "false"
+      # Maven sans couleur/bannière
+      MAVEN_OPTS: "-Xmx2g"
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 21
+      - name: Setup Temurin JDK 21 (cache Maven)
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: '21'
+          java-version: 21
           cache: maven
 
-      - name: Build & test
-        run: mvn -B verify
+      - name: Build & test (unit + IT)
+        run: mvn -B -ntp clean verify
 
-      - name: Build Docker image
-        run: |
-          docker build -t ${{ github.repository }}:${{ github.sha }} .
+      - name: Upload surefire/failsafe reports (toujours utile)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-reports
+          path: |
+            **/target/surefire-reports/*
+            **/target/failsafe-reports/*
 
-      - name: Login to GHCR
-        if: github.ref == 'refs/heads/main'
+      # (Optionnel) SBOM CycloneDX
+      - name: Generate SBOM
+        run: mvn -B -ntp -DskipTests cyclonedx:makeAggregateBom
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom
+          path: target/bom.json
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Push image to GHCR
-        if: github.ref == 'refs/heads/main'
-        run: |
-          IMAGE=ghcr.io/${{ github.repository }}
-          docker tag ${{ github.repository }}:${{ github.sha }} $IMAGE:${{ github.sha }}
-          docker tag ${{ github.repository }}:${{ github.sha }} $IMAGE:latest
-          docker push $IMAGE:${{ github.sha }}
-          docker push $IMAGE:latest
+      - name: Docker meta (tags + labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ghcr.io/OWNER/REPO
+          tags: |
+            type=sha,format=long
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build & push image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          provenance: false
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

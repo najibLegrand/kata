@@ -1,0 +1,12 @@
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: delivery-scheduler
+spec:
+  to:
+    kind: Service
+    name: delivery-scheduler
+  port:
+    targetPort: http
+  tls:
+    termination: edge

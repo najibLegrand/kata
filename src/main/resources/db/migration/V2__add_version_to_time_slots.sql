@@ -1,0 +1,3 @@
+-- H2 & PostgreSQL OK
+ALTER TABLE time_slots
+  ADD COLUMN version BIGINT NOT NULL DEFAULT 0;

@@ -2,6 +2,7 @@
 package com.carrefour.kata.api;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,7 +18,9 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.NOT_FOUND, ex.getMessage());
     }
 
-    @ExceptionHandler({IllegalStateException.class, OptimisticLockingFailureException.class})
+    @ExceptionHandler({IllegalStateException.class,
+            OptimisticLockingFailureException.class,
+            DataIntegrityViolationException.class})
     public ResponseEntity<Map<String, Object>> conflict(RuntimeException ex) {
         return build(HttpStatus.CONFLICT, ex.getMessage());
     }
@@ -29,4 +32,5 @@ public class GlobalExceptionHandler {
                 "message", msg
         ));
     }
+
 }

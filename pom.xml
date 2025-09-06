@@ -15,10 +15,17 @@
         <java.version>21</java.version>
         <spring-boot.version>3.4.0</spring-boot.version>
         <spring-ai.version>1.0.0-M6</spring-ai.version>
-        <maven.compiler.release>${java.version}</maven.compiler.release>
-        <!-- Pour @PathVariable/@RequestParam sans nom: -->
-        <maven.compiler.parameters>true</maven.compiler.parameters>
         <springdoc.version>2.7.0</springdoc.version>
+        <resilience4j.version>2.2.0</resilience4j.version>
+
+        <!-- compiler -->
+        <maven.compiler.release>${java.version}</maven.compiler.release>
+        <maven.compiler.parameters>true</maven.compiler.parameters>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <!-- 🔹 version Testcontainers (compatible Java 21 / Boot 3.x) -->
+        <testcontainers.version>1.19.8</testcontainers.version>
+        <flyway.version>10.20.0</flyway.version>
     </properties>
 
     <dependencyManagement>
@@ -40,17 +47,26 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- 🔹 Testcontainers BOM -->
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 
     <dependencies>
-        <!-- Web layer -->
+        <!-- Web/API -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
 
-        <!-- Persistence / JPA -->
+        <!-- JPA + H2 (dev/test) -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -61,37 +77,108 @@
             <scope>runtime</scope>
         </dependency>
 
-        <!-- Spring AI (OpenAI integration) -->
+        <!-- Spring AI (OpenAI) -->
         <dependency>
             <groupId>org.springframework.ai</groupId>
             <artifactId>spring-ai-openai-spring-boot-starter</artifactId>
         </dependency>
 
-        <!-- Testing -->
+        <!-- Observabilité -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-registry-prometheus</artifactId>
         </dependency>
 
+        <!-- Résilience (retry / circuit breaker) -->
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>${resilience4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-aop</artifactId>
+        </dependency>
+
+        <!-- Migrations DB -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+            <version>${flyway.version}</version>
+        </dependency>
+
+
+        <!-- (Optionnel) Tracing OTEL -->
+        <dependency>
+            <groupId>io.micrometer</groupId>
+            <artifactId>micrometer-tracing-bridge-otel</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-exporter-otlp</artifactId>
+        </dependency>
+
+        <!-- Swagger / OpenAPI UI -->
         <dependency>
             <groupId>org.springdoc</groupId>
             <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
             <version>${springdoc.version}</version>
         </dependency>
 
+        <!-- Tests -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 🔹 Testcontainers (JUnit 5) -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 🔹 Testcontainers PostgreSQL -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- 🔹 Driver PostgreSQL (pour les IT) -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
-            <!-- Jar exécutable Spring Boot -->
+            <!-- Executable boot jar -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <version>${spring-boot.version}</version>
                 <configuration>
-                    <!-- Optionnel, Boot détecte la classe @SpringBootApplication tout seul -->
                     <mainClass>com.carrefour.kata.DeliverySchedulerApplication</mainClass>
+                    <layers enabled="true"/>
                 </configuration>
                 <executions>
                     <execution>
@@ -102,17 +189,32 @@
                 </executions>
             </plugin>
 
-            <!-- (Optionnel) compiler plugin explicite si tu préfères que via <properties> -->
-            <!--
+            <!-- Compiler -->
             <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-compiler-plugin</artifactId>
-              <configuration>
-                <release>${java.version}</release>
-                <parameters>true</parameters>
-              </configuration>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
+                <configuration>
+                    <release>${java.version}</release>
+                    <parameters>${maven.compiler.parameters}</parameters>
+                </configuration>
             </plugin>
-            -->
+
+            <!-- Surefire (unit + IT) -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
+                <configuration>
+                    <useModulePath>false</useModulePath>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*IT.java</include>
+                    </includes>
+                    <!-- optionnel: pour calmer l’avertissement Mockito -->
+                    <!-- <argLine>-XX:+EnableDynamicAgentLoading</argLine> -->
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 

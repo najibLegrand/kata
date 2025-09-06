@@ -25,11 +25,13 @@ public class ReservationService {
         TimeSlot slot = slotRepo.findById(slotId)
                 .orElseThrow(() -> new EntityNotFoundException("Slot not found"));
 
-        if (slot.isReserved()) {
+        if (slot.isReserved() || resRepo.existsByTimeSlotId(slotId)) {
             throw new IllegalStateException("Slot already reserved");
         }
-        slot.setReserved(true);              // déclenche la version pour l’optimistic locking
+
+        slot.setReserved(true);                       // déclenche la version (optimistic locking)
         Reservation res = new Reservation(customerRef, slot);
         return resRepo.save(res);
     }
+
 }

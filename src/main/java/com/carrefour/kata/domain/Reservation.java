@@ -2,9 +2,6 @@ package com.carrefour.kata.domain;
 
 import jakarta.persistence.*;
 
-/**
- * Réservation d'un créneau par un client.
- */
 @Entity
 @Table(name = "reservations")
 public class Reservation {
@@ -13,13 +10,17 @@ public class Reservation {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    /** Identifiant fonctionnel du client (simple pour le kata). */
+    @Column(name = "customer_ref", nullable = false)
     private String customerRef;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @ManyToOne(optional = false, fetch = FetchType.LAZY)
+    @JoinColumn(
+            name = "slot_id",                 // <— IMPORTANT : doit matcher le DDL Flyway
+            nullable = false,
+            foreignKey = @ForeignKey(name = "fk_reservation_slot")
+    )
     private TimeSlot timeSlot;
 
-    /* ---------- constructeurs ---------- */
     protected Reservation() { }  // JPA
 
     public Reservation(String customerRef, TimeSlot timeSlot) {
@@ -27,7 +28,6 @@ public class Reservation {
         this.timeSlot = timeSlot;
     }
 
-    /* ---------- getters ---------- */
     public Long getId() { return id; }
     public String getCustomerRef() { return customerRef; }
     public TimeSlot getTimeSlot() { return timeSlot; }
